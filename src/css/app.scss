@@ -1,1 +1,32 @@
-// app global css in SCSS form
+// global
+
+.letter-spacing-none {
+  letter-spacing: 0;
+}
+
+.body--dark {
+  .bg-primary,
+  .q-layout__section--marginal {
+    background-color: $primary-dark !important;
+  }
+
+  .q-drawer {
+    border: none;
+  }
+}
+
+// Navlink css
+
+.q-drawer {
+  .q-item {
+    opacity: 0.5;
+    &.q-router-link--exact-active {
+      opacity: 1;
+    }
+  }
+}
+
+// entries
+.running-balance {
+  right: 11px;
+}

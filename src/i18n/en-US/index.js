@@ -1,7 +1,29 @@
-// This is just an example,
-// so you can safely delete all default props below
-
 export default {
-  failed: 'Action failed',
-  success: 'Action was successful'
-}
+  language: "Language",
+  home: "Home",
+  delete: "Delete",
+  menu: "Menu",
+  cashplay: "CashPlay",
+  entries: "Entries",
+  settings: "Settings",
+  balance: "Balance",
+  amount: "Amount",
+  amountRequired: "Amount is required",
+  name: "Name",
+  nameRequired: "Name is required",
+  profile: "Profile",
+  logout: "Logout",
+
+  settings: {
+    entries: "Entries",
+    settings: "Settings",
+    promptToDelete: "Prompt To Delete",
+    showRunningBalance: "Show Running Balance",
+    currencySymbol: "Currency Symbol",
+    appearance: "Appearance",
+    light: "Light",
+    dark: "Dark",
+    auto: "Auto",
+    followDevicePreference: "Follow the preference of your device",
+  },
+};
