@@ -5,7 +5,10 @@
       <!-- QPage must be a direct child of QPageContainer -->
       <q-page class="flex flex-center login-bg">
         <div class="login-box column q-pa-xl shadow-4">
-          <div class="text-h5 text-center q-mb-md">Welcome Back 👋</div>
+          <div v-if="!otpSent" class="text-h5 text-center q-mb-md">
+            <i> Welcome </i>👋
+          </div>
+          <div v-if="otpSent" class="text-h5 text-center q-mb-md">Login</div>
 
           <q-form @submit.prevent="submitForm" class="q-gutter-md">
             <q-input

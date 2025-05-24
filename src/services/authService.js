@@ -15,7 +15,7 @@ export default {
   async logout(email, token) {
     return API.delete("auth/user-logout", {
       params: {
-        emailId: email,
+        email: email,
         token: token,
       },
     });

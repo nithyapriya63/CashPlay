@@ -26,8 +26,11 @@ export const useAuthStore = defineStore("auth", {
 
     async loginUser(otp) {
       try {
+        if (!this.email) {
+          this.email = localStorage.getItem("email") || "";
+        }
         const res = await authService.login(this.email, otp);
-        this.token = res.data.token;
+        this.token = res.data.accessToken || "";
         localStorage.setItem("email", this.email);
         localStorage.setItem("token", this.token);
         return res.data;
@@ -37,8 +40,8 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async logout(router) {
-      const email = this.email;
-      const token = this.token;
+      const email = this.email || localStorage.getItem("email");
+      const token = this.token || localStorage.getItem("token");
 
       if (!email || !token) {
         console.warn("Missing email or token, skipping logout API call");
