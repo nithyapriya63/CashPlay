@@ -64,5 +64,23 @@ export const useAuthStore = defineStore("auth", {
 
       router.replace("/login");
     },
+    // Session Time out
+    handleAppReopen(router) {
+      const isFirstLoad = !sessionStorage.getItem("sessionStarted");
+
+      if (isFirstLoad) {
+        sessionStorage.setItem("sessionStarted", "true");
+
+        this.token = "";
+        this.email = "";
+        this.otpSent = false;
+        localStorage.removeItem("token");
+        localStorage.removeItem("email");
+
+        if (router.currentRoute.value.name !== "login") {
+          router.replace({ name: "login" });
+        }
+      }
+    },
   },
 });
