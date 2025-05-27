@@ -1,86 +1,87 @@
 import { defineStore } from "pinia";
+import { ref, computed } from "vue";
 import authService from "src/services/authService";
 
-export const useAuthStore = defineStore("auth", {
-  state: () => ({
-    email: localStorage.getItem("email") || "",
-    otpSent: false,
-    token: localStorage.getItem("token") || "",
-  }),
+export const useAuthStore = defineStore(
+  "auth",
+  () => {
+    // state
+    const email = ref("");
+    const otpSent = ref(false);
+    const token = ref({
+      accessToken: "",
+      refreshToken: "",
+    });
 
-  getters: {
-    isAuthenticated: (state) => !!state.token,
-  },
+    // getters
+    const isAuthenticated = computed(() => !!token.value.accessToken);
 
-  actions: {
-    async registerUser(email) {
+    // actions
+
+    async function registerUser(userEmail) {
       try {
-        const res = await authService.register(email);
-        this.email = email;
-        this.otpSent = true;
+        const res = await authService.register(userEmail);
+        email.value = userEmail;
+        otpSent.value = true;
         return res.data;
       } catch (error) {
         throw error.response?.data?.message || "Registration failed";
       }
-    },
+    }
 
-    async loginUser(otp) {
+    async function loginUser(otp) {
       try {
-        if (!this.email) {
-          this.email = localStorage.getItem("email") || "";
-        }
-        const res = await authService.login(this.email, otp);
-        this.token = res.data.accessToken || "";
-        localStorage.setItem("email", this.email);
-        localStorage.setItem("token", this.token);
+        const res = await authService.login(email.value, otp);
+        token.value = {
+          accessToken: res.data.accessToken || "",
+          refreshToken: res.data.refreshToken || "",
+        };
         return res.data;
       } catch (error) {
         throw error.response?.data?.message || "Login failed";
       }
-    },
+    }
 
-    async logout(router) {
-      const email = this.email || localStorage.getItem("email");
-      const token = this.token || localStorage.getItem("token");
-
-      if (!email || !token) {
-        console.warn("Missing email or token, skipping logout API call");
-      } else {
-        try {
-          await authService.logout(email, token);
-        } catch (error) {
-          console.warn(
-            "Logout API error:",
-            error?.response?.data || error.message
-          );
+    async function logout(router) {
+      try {
+        if (email.value && token.value.accessToken) {
+          await authService.logout(email.value, token.value.accessToken);
         }
+      } catch (error) {
+        console.warn("Logout failed:", error.message);
       }
 
-      this.token = "";
-      this.email = "";
-      this.otpSent = false;
-      localStorage.removeItem("token");
-      localStorage.removeItem("email");
-
+      token.value = { accessToken: "", refreshToken: "" };
+      email.value = "";
+      otpSent.value = false;
       router.replace("/login");
-    },
-    // Session Time out
-    handleAppReopen(router) {
-      const isFirstLoad = !sessionStorage.getItem("sessionStarted");
+    }
 
+    function handleAppReopen(router) {
+      const isFirstLoad = !sessionStorage.getItem("sessionStarted");
       if (isFirstLoad) {
         sessionStorage.setItem("sessionStarted", "true");
-
-        this.token = "";
-        this.email = "";
-        this.otpSent = false;
-        localStorage.removeItem("token");
-        localStorage.removeItem("email");
-
-        if (router.currentRoute.value.name !== "login") {
-          router.replace({ name: "login" });
-        }
+        token.value = { accessToken: "", refreshToken: "" };
+        email.value = "";
+        otpSent.value = false;
+        router.replace({ name: "login" });
       }
-    },
+    }
+
+    return {
+      email,
+      otpSent,
+      token,
+      isAuthenticated,
+      registerUser,
+      loginUser,
+      logout,
+      handleAppReopen,
+    };
   },
-});
+  {
+    persist: {
+      paths: ["token", "email"],
+    },
+  }
+);

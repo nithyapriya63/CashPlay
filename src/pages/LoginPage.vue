@@ -112,6 +112,25 @@ const startTimer = () => {
   }, 1000);
 };
 
+// On first page load or refresh
+onMounted(() => {
+  authStore.otpSent = false; // ✅ reset manually
+  clearInterval(interval.value);
+  timer.value = 0;
+  canResend.value = false;
+});
+
+// When OTP is sent, start the timer
+watch(otpSent, (val) => {
+  if (val) {
+    startTimer();
+  } else {
+    clearInterval(interval.value);
+    timer.value = 0;
+    canResend.value = false;
+  }
+});
+
 onUnmounted(() => {
   if (interval.value) clearInterval(interval.value);
 });

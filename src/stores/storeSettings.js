@@ -28,7 +28,7 @@ export const useStoreSettings = defineStore("settings", () => {
     },
     { deep: true } // Ensure deep watching for changes
   );
-  //getters
+
   //actions
 
   const saveSettings = () => {

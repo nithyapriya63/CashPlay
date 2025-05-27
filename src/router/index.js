@@ -35,8 +35,30 @@
 
 //   return Router;
 // });
+// import { createRouter, createWebHistory } from "vue-router";
+// import routes from "./routes";
+
+// const router = createRouter({
+//   history: createWebHistory(),
+//   routes,
+// });
+
+// router.beforeEach((to, from, next) => {
+//   const isAuthenticated = !!localStorage.getItem("token");
+
+//   if (to.matched.some((record) => record.meta.requiresAuth)) {
+//     if (!isAuthenticated) {
+//       return next({ name: "login" });
+//     }
+//   }
+
+//   next();
+// });
+
+// export default router;
 import { createRouter, createWebHistory } from "vue-router";
 import routes from "./routes";
+import { useAuthStore } from "src/stores/authStore";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -44,7 +66,8 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem("token");
+  const authStore = useAuthStore();
+  const isAuthenticated = authStore.isAuthenticated;
 
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!isAuthenticated) {
