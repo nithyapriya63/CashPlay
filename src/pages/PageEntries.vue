@@ -1,5 +1,16 @@
 <template>
   <div class="q-pa-md">
+    <div class="row justify-end q-mb-sm">
+      <q-btn
+        dense
+        round
+        unelevated
+        color="primary"
+        icon="add"
+        @click="showAddDialog = true"
+        class="q-ml-xs"
+      />
+    </div>
     <NoDataFound v-if="!storeEntries.entries.length" />
     <q-list bordered separator v-else>
       <q-slide-item
@@ -103,7 +114,14 @@
   <q-footer class="bg-transparent">
     <EntryBalance />
 
-    <AddEntry />
+    <!-- <AddEntry /> -->
+    <q-dialog v-model="showAddDialog" persistent>
+      <q-card style="min-width: 400px; max-width: 90vw">
+        <q-card-section>
+          <AddEntry @close="showAddDialog = false" />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-footer>
 </template>
 
@@ -117,6 +135,7 @@ import { useStoreSettings } from "../stores/storeSettings";
 import NoDataFound from "src/components/Entries/NoDataFound.vue";
 import AddEntry from "src/components/Entries/AddEntry.vue";
 import EntryBalance from "src/components/Entries/EntryBalance.vue";
+import { onMounted } from "vue";
 
 const $q = useQuasar();
 // stores
@@ -124,6 +143,7 @@ const storeEntries = useStoreEntries();
 const storeSettings = useStoreSettings();
 const rowsPerPage = 5;
 const page = ref(1);
+const showAddDialog = ref(false);
 
 // slide left to delete the entry
 const onEntrySlideRight = ({ reset }, entryId) => {
@@ -182,4 +202,8 @@ const maxPage = computed(() =>
 const onPageChange = (newPage) => {
   page.value = newPage;
 };
+
+onMounted(() => {
+  storeEntries.loadEntries(); // 👈 auto fetch from backend on load
+});
 </script>

@@ -80,7 +80,7 @@ defineOptions({
 const leftDrawerOpen = ref(false);
 const { t } = useI18n();
 const languageStore = useLanguageStore();
-const currentLang = ref(languageStore.language);
+const currentLang = ref(languageStore.selectedLanguage);
 const authStore = useAuthStore();
 const router = useRouter();
 const linksList = computed(() => [

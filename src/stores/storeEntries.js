@@ -1,6 +1,10 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { uid, Notify, LocalStorage } from "quasar";
+import entriesService from "src/services/entriesService";
+import { getDefaultEntry } from "src/models/Entry";
+import { useAuthStore } from "src/stores/authStore";
+// import { getDefaultEntryRequest } from "src/models/EntryList";
 
 export const useStoreEntries = defineStore("entries", () => {
   //state
@@ -49,10 +53,38 @@ export const useStoreEntries = defineStore("entries", () => {
     return runningBalances;
   });
 
-  //actions
-  const addEntry = (addEntryForm) => {
-    const newEntry = Object.assign({}, addEntryForm, { id: uid() });
-    entries.value.push(newEntry);
+  const addEntry = async ({ name, amount, date }) => {
+    const authStore = useAuthStore();
+    const user = authStore.user;
+
+    const entryPayload = getDefaultEntry({ name, amount, date, user });
+
+    try {
+      const response = await entriesService.createEntry(entryPayload);
+      const createdEntries = response.data || [];
+
+      createdEntries.forEach((entry) => {
+        entries.value.push({
+          id: uid(),
+          name: entry.title,
+          amount: entry.amount,
+          date: entry.date,
+        });
+      });
+
+      Notify.create({
+        color: "positive",
+        message: "Entry added successfully!",
+        position: "top",
+      });
+    } catch (error) {
+      console.error("Error adding entry:", error);
+      Notify.create({
+        color: "negative",
+        message: "Failed to add entry!",
+        position: "top",
+      });
+    }
   };
 
   const deleteEntry = (entryId) => {

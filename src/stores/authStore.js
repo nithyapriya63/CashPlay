@@ -13,6 +13,15 @@ export const useAuthStore = defineStore(
       refreshToken: "",
     });
 
+    // Computed user object
+    const user = computed(() => ({
+      id: 1,
+      emailId: email.value,
+      accessToken: token.value.accessToken,
+      refreshToken: token.value.refreshToken,
+      code: 0,
+    }));
+
     // getters
     const isAuthenticated = computed(() => !!token.value.accessToken);
 
@@ -73,6 +82,7 @@ export const useAuthStore = defineStore(
       otpSent,
       token,
       isAuthenticated,
+      user,
       registerUser,
       loginUser,
       logout,
@@ -81,7 +91,7 @@ export const useAuthStore = defineStore(
   },
   {
     persist: {
-      paths: ["token", "email"],
+      paths: ["token", "email", "user"],
     },
   }
 );

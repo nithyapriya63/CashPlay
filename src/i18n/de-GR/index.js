@@ -13,6 +13,9 @@ export default {
   nameRequired: "Name ist erforderlich",
   profile: "Profil",
   logout: "Abmelden",
+  addEntry: "Eintrag hinzufügen",
+  submit: "Speichern",
+  cancel: "Abbrechen",
 
   settings: {
     entries: "Einträge",
