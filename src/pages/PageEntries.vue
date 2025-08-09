@@ -136,6 +136,7 @@ import NoDataFound from "src/components/Entries/NoDataFound.vue";
 import AddEntry from "src/components/Entries/AddEntry.vue";
 import EntryBalance from "src/components/Entries/EntryBalance.vue";
 import { onMounted } from "vue";
+import { useAuthStore } from "src/stores/authStore";
 
 const $q = useQuasar();
 // stores
@@ -144,6 +145,7 @@ const storeSettings = useStoreSettings();
 const rowsPerPage = 5;
 const page = ref(1);
 const showAddDialog = ref(false);
+const authStore = useAuthStore();
 
 // slide left to delete the entry
 const onEntrySlideRight = ({ reset }, entryId) => {
@@ -203,7 +205,12 @@ const onPageChange = (newPage) => {
   page.value = newPage;
 };
 
+// onMounted(() => {
+//   storeEntries.fetchEntries(); // auto fetch from backend on load
+// });
 onMounted(() => {
-  storeEntries.loadEntries(); // 👈 auto fetch from backend on load
+  if (authStore.token.accessToken) {
+    storeEntries.fetchEntries();
+  }
 });
 </script>

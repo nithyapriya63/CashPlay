@@ -19,7 +19,7 @@ const router = useRouter();
 
 onMounted(() => {
   storeSettings.loadSettings();
-  storeEntries.loadEntries();
+  storeEntries.fetchEntries();
   auth.handleAppReopen(router);
 });
 </script>

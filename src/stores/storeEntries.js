@@ -2,37 +2,14 @@ import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { uid, Notify, LocalStorage } from "quasar";
 import entriesService from "src/services/entriesService";
-import { getDefaultEntry } from "src/models/Entry";
+import { getDefaultEntry, getDefaultUpdateEntry } from "src/models/Entry";
 import { useAuthStore } from "src/stores/authStore";
-// import { getDefaultEntryRequest } from "src/models/EntryList";
+import { getDefaultEntryRequest } from "src/models/EntryList";
 
 export const useStoreEntries = defineStore("entries", () => {
   //state
-  const entries = ref([
-    {
-      id: "id1",
-      name: "Salary",
-      amount: 10000,
-    },
-    {
-      id: "id2",
-      name: "Insurance",
-      amount: -100,
-    },
-    {
-      id: "id3",
-      name: "Phone",
-      amount: -300,
-    },
-  ]);
+  const entries = ref([]);
 
-  watch(
-    entries,
-    () => {
-      saveEntries();
-    },
-    { deep: true } // Ensure deep watching for changes
-  );
   //getters
 
   const balance = computed(() => {
@@ -53,6 +30,7 @@ export const useStoreEntries = defineStore("entries", () => {
     return runningBalances;
   });
 
+  // actions
   const addEntry = async ({ name, amount, date }) => {
     const authStore = useAuthStore();
     const user = authStore.user;
@@ -71,6 +49,7 @@ export const useStoreEntries = defineStore("entries", () => {
           date: entry.date,
         });
       });
+      await fetchEntries();
 
       Notify.create({
         color: "positive",
@@ -87,33 +66,104 @@ export const useStoreEntries = defineStore("entries", () => {
     }
   };
 
-  const deleteEntry = (entryId) => {
-    const index = entries.value.findIndex((entry) => entry.id === entryId);
-    entries.value.splice(index, 1);
-    Notify.create({
-      color: "negative",
-      message: "Entry Deleted",
-      position: "top",
-    });
-  };
+  const deleteEntry = async (entryId) => {
+    try {
+      await entriesService.deleteEntry(entryId);
 
-  const onUpdateEntry = (entryId, updates) => {
-    const index = getEntryIndexById(entryId);
-    Object.assign(entries.value[index], updates);
+      const index = getEntryIndexById(entryId);
+      if (index !== -1) {
+        entries.value.splice(index, 1);
+      }
+
+      Notify.create({
+        color: "positive",
+        message: "Entry deleted successfully!",
+        position: "top",
+      });
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      Notify.create({
+        color: "negative",
+        message: "Failed to delete entry!",
+        position: "top",
+      });
+    }
   };
 
   const getEntryIndexById = (entryId) => {
     return entries.value.findIndex((entry) => entry.id === entryId);
   };
 
-  const saveEntries = () => {
-    LocalStorage.set("entries", entries.value);
+  const onUpdateEntry = async (entryId, updates) => {
+    const authStore = useAuthStore();
+    const user = authStore.user;
+
+    const index = getEntryIndexById(entryId);
+    if (index === -1) return;
+
+    const updatedEntryData = {
+      ...entries.value[index],
+      ...updates,
+    };
+
+    const entryPayload = getDefaultUpdateEntry({
+      id: updatedEntryData.id,
+      name: updatedEntryData.name,
+      amount: updatedEntryData.amount,
+      date: updatedEntryData.date,
+      user,
+    });
+
+    try {
+      const response = await entriesService.updateEntry(entryId, entryPayload);
+      const updatedFromApi = response.data;
+
+      entries.value[index] = {
+        id: updatedFromApi.id,
+        name: updatedFromApi.title,
+        amount: updatedFromApi.amount,
+        date: updatedFromApi.date,
+      };
+
+      Notify.create({
+        color: "positive",
+        message: "Entry updated successfully!",
+        position: "top",
+      });
+    } catch (error) {
+      console.error("Error updating entry:", error);
+      Notify.create({
+        color: "negative",
+        message: "Failed to update entry!",
+        position: "top",
+      });
+    }
   };
 
-  const loadEntries = () => {
-    const savedEntries = LocalStorage.getItem("entries");
-    if (savedEntries) {
-      entries.value = savedEntries;
+  const fetchEntries = async () => {
+    try {
+      const filters = getDefaultEntryRequest();
+      const response = await entriesService.listEntries(filters);
+
+      // Access the first key dynamically
+      const monthlyKey = Object.keys(response.data)[0];
+      const monthlyData = response.data[monthlyKey];
+
+      if (!monthlyData || !Array.isArray(monthlyData.data)) {
+        console.warn("Invalid response structure", response.data);
+        entries.value = [];
+        return;
+      }
+
+      // Extract entries
+      entries.value = monthlyData.data.map((entry) => ({
+        id: entry.id,
+        name: entry.title,
+        amount: entry.amount,
+        date: entry.date,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch entries:", error);
     }
   };
 
@@ -129,6 +179,6 @@ export const useStoreEntries = defineStore("entries", () => {
     addEntry,
     deleteEntry,
     onUpdateEntry,
-    loadEntries,
+    fetchEntries,
   };
 });

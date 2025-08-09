@@ -1,7 +1,7 @@
 import { api } from "src/boot/axios";
 
 export default {
-  // Create new income data entry
+  // Create
   async createEntry(entryData) {
     return api.post("/data", entryData);
   },
@@ -21,7 +21,7 @@ export default {
     return api.delete(`/data/${id}`);
   },
 
-  // List all entries (POST /data/list if you need filters)
+  //filters
   async listEntries(filters = {}) {
     return api.post("/data/list", filters);
   },
